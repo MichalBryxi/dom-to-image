@@ -1,3 +1,10 @@
+
+This is unofficial version of dom-to-image, forked from [Michal Bryxi](https://github.com/MichalBryxi/dom-to-image)'s repository 
+
+Merged changes by [by Derek Knox](https://github.com/derek-knox):
+
+* Forked on 6/26/18 and added ability for SVG `<use>` to clone its shadow DOM child.
+
 # DOM to Image
 
 [![Build Status](https://travis-ci.org/tsayen/dom-to-image.svg?branch=master)](https://travis-ci.org/tsayen/dom-to-image)
