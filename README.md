@@ -4,7 +4,6 @@ This is unofficial version of dom-to-image, forked from [Michal Bryxi](https://g
 Merged changes by [by Derek Knox](https://github.com/derek-knox):
 
 * Forked on 6/26/18 and added ability for SVG `<use>` to clone its shadow DOM child.
-* Merged on 4/02/19 and added dpi option thanks to [Igor Bulovski](https://github.com/h4buli/dom-to-image).
 
 # DOM to Image
 
@@ -143,10 +142,6 @@ A string value for the background color, any valid CSS color value.
 #### height, width
 
 Height and width in pixels to be applied to node before rendering.
-
-#### dpi
-
-Dots per inch to be applied when rasterizing image.
 
 #### style
 

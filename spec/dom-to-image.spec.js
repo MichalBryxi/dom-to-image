@@ -99,7 +99,7 @@
                     .then(done).catch(done);
             });
 
-            it('should render svg <rect> with width and height', function (done) {
+            it('should render svg <rect> with width and heigth', function (done) {
                 loadTestPage('svg-rect/dom-node.html', 'svg-rect/style.css', 'svg-rect/control-image')
                     .then(renderAndCheck)
                     .then(done).catch(done);
@@ -243,17 +243,6 @@
                     .then(renderToPng)
                     .then(drawDataUrl)
                     .then(assertTextRendered(['0']))
-                    .then(done).catch(done);
-            });
-
-            it('should render higher dpi', function (done) {
-                loadTestPage('small/dom-node.html', 'small/style.css', 'small/control-image-dpi')
-                    .then(function () {
-                        return domtoimage.toPng(domNode(), {
-                            dpi: 96 * 3
-                        });
-                    })
-                    .then(check)
                     .then(done).catch(done);
             });
 

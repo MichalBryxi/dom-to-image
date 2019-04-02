@@ -43,7 +43,6 @@
      * @param {String} options.bgcolor - color for the background, any valid CSS color value.
      * @param {Number} options.width - width to be applied to node before rendering.
      * @param {Number} options.height - height to be applied to node before rendering.
-     * @param {Number} options.dpi - dots per inch to be used when rasterizing image.
      * @param {Object} options.style - an object whose properties to be copied to node's style before rendering.
      * @param {Number} options.quality - a Number between 0 and 1 indicating image quality (applicable to JPEG only), defaults to 1.0.
      * @param {String} options.imagePlaceholder - dataURL to use as a placeholder for failed images, default behaviour is to fail fast on images we can't fetch
@@ -162,20 +161,12 @@
             });
 
         function newCanvas(domNode) {
-            var canvas = document.createElement('canvas'),
-                ctx = canvas.getContext('2d'),
-                DEFAULT_SCREEN_DPI = 96;
+            var canvas = document.createElement('canvas');
             canvas.width = options.width || window.devicePixelRatio * util.width(domNode);
             canvas.height = options.height || window.devicePixelRatio * util.height(domNode);
 
-            if (options.dpi && options.dpi !== null) {
-                var scaleFactor = options.dpi / DEFAULT_SCREEN_DPI;
-                canvas.width = Math.ceil(canvas.width * scaleFactor);
-                canvas.height = Math.ceil(canvas.height * scaleFactor);
-                ctx.scale(scaleFactor, scaleFactor);
-            }
-
             if (options.bgcolor) {
+                var ctx = canvas.getContext('2d');
                 ctx.fillStyle = options.bgcolor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
@@ -318,7 +309,6 @@
             function fixSvg() {
                 if (!(clone instanceof SVGElement)) return;
                 clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
 
                 if (!(clone instanceof SVGRectElement)) return;
                 ['width', 'height'].forEach(function (attribute) {
