@@ -105,6 +105,12 @@
                     .then(done).catch(done);
             });
 
+            it('should render svg <line> with marker head in <defs> tag', function (done) {
+                loadTestPage('svg-arrow-head/dom-node.html', 'svg-arrow-head/style.css', 'svg-arrow-head/control-image')
+                    .then(renderAndCheck)
+                    .then(done).catch(done);
+            });
+
             it('should render whole node when its scrolled', function (done) {
                 var domNode;
                 loadTestPage('scroll/dom-node.html', 'scroll/style.css', 'scroll/control-image')

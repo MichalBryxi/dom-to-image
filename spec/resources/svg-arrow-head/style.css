@@ -1,0 +1,24 @@
+#dom-node {
+    width: 100px;
+    overflow: hidden;
+}
+
+#root {
+    border: 1px solid red;
+    position: relative;
+    height: 100px;
+}
+
+svg {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+}
+.svg-line {
+    cursor: crosshair;
+    stroke: rgba(0, 0, 0, 0.8);
+    stroke-width: 3;
+}
+.svg-line-head {
+    fill: rgba(0, 0, 0, 0.8);
+}
