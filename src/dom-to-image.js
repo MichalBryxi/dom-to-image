@@ -696,7 +696,7 @@
 							return fetch(sheet.href)
 								.then(toText)
 								.then(setBaseHref(sheet.href))
-								.then(toStyleSheet);
+								.then(toStyleSheet(sheet.href));
 						} else {
 							return Promise.resolve(sheet);
 						}
@@ -752,14 +752,17 @@
 					}
 				}
 
-				function toStyleSheet(text) {
-					var doc = document.implementation.createHTMLDocument('');
-					var styleElement = document.createElement('style');
+				function toStyleSheet(base) {
+					return function(text) {
+						var doc = document.implementation.createHTMLDocument('');
+						var styleElement = document.createElement('style');
 
-					styleElement.textContent = text;
-					doc.body.appendChild(styleElement);
+						styleElement.textContent = text;
+						styleElement.setAttribute('data-dom-to-image-base', base);
+						doc.body.appendChild(styleElement);
 
-					return styleElement.sheet;
+						return styleElement.sheet;
+					}
 				}
 			}
 
@@ -781,6 +784,12 @@
 				return {
 					resolve: function resolve() {
 						var baseUrl = (webFontRule.parentStyleSheet || {}).href;
+
+						// webFontRule is clone, there is no href
+						if (!baseUrl && webFontRule.parentStyleSheet && webFontRule.parentStyleSheet.ownerNode) {
+							baseUrl = webFontRule.parentStyleSheet.ownerNode.getAttribute('data-dom-to-image-base') || null;
+						}
+
 						return inliner.inlineAll(webFontRule.cssText, baseUrl);
 					},
 					src: function () {
