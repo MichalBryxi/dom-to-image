@@ -29,6 +29,12 @@
         }
     };
 
+    // Xml namespaces (the ht|tp part is deliberately splited
+    // to prevent "automatic https rewrites" services to
+    // alter this file on request and change our xmls)
+    var xmlnsXhtml = 'ht' + 'tp://www.w3.org/1999/xhtml';
+    var xmlnsSvg = 'ht' + 'tp://www.w3.org/2000/svg';
+
     if (typeof module !== 'undefined')
         module.exports = domtoimage;
     else
@@ -303,7 +309,7 @@
 
             function fixSvg() {
                 if (!(clone instanceof SVGElement)) return;
-                clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                clone.setAttribute('xmlns', xmlnsSvg);
 
                 if (!(clone instanceof SVGRectElement)) return;
                 ['width', 'height'].forEach(function (attribute) {
@@ -336,7 +342,7 @@
     function makeSvgDataUri(node, width, height) {
         return Promise.resolve(node)
             .then(function (node) {
-                node.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+                node.setAttribute('xmlns', xmlnsXhtml);
                 return new XMLSerializer().serializeToString(node);
             })
             .then(util.escapeXhtml)
@@ -344,7 +350,7 @@
                 return '<foreignObject x="0" y="0" width="100%" height="100%">' + xhtml + '</foreignObject>';
             })
             .then(function (foreignObject) {
-                return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
+                return '<svg xmlns="' + xmlnsSvg + '" width="' + width + '" height="' + height + '">' +
                     foreignObject + '</svg>';
             })
             .then(function (svg) {
