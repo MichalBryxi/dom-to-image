@@ -29,6 +29,12 @@
         }
     };
 
+    // Xml namespaces (the ht|tp part is deliberately splited
+    // to prevent "automatic https rewrites" services to
+    // alter this file on request and change our xmls)
+    var xmlnsXhtml = 'ht' + 'tp://www.w3.org/1999/xhtml';
+    var xmlnsSvg = 'ht' + 'tp://www.w3.org/2000/svg';
+
     if (typeof module !== 'undefined')
         module.exports = domtoimage;
     else
@@ -303,7 +309,7 @@
 
             function fixSvg() {
                 if (!(clone instanceof SVGElement)) return;
-                clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                clone.setAttribute('xmlns', xmlnsSvg);
 
                 if (!(clone instanceof SVGRectElement)) return;
                 ['width', 'height'].forEach(function (attribute) {
@@ -336,7 +342,7 @@
     function makeSvgDataUri(node, width, height) {
         return Promise.resolve(node)
             .then(function (node) {
-                node.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+                node.setAttribute('xmlns', xmlnsXhtml);
                 return new XMLSerializer().serializeToString(node);
             })
             .then(util.escapeXhtml)
@@ -344,7 +350,7 @@
                 return '<foreignObject x="0" y="0" width="100%" height="100%">' + xhtml + '</foreignObject>';
             })
             .then(function (foreignObject) {
-                return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '">' +
+                return '<svg xmlns="' + xmlnsSvg + '" width="' + width + '" height="' + height + '">' +
                     foreignObject + '</svg>';
             })
             .then(function (svg) {
@@ -359,8 +365,8 @@
             mimeType: mimeType,
             dataAsUrl: dataAsUrl,
             isDataUrl: isDataUrl,
-			isSrcAsDataUrl: isSrcAsDataUrl,
-			canvasToBlob: canvasToBlob,
+            isSrcAsDataUrl: isSrcAsDataUrl,
+            canvasToBlob: canvasToBlob,
             resolveUrl: resolveUrl,
             getAndEncode: getAndEncode,
             uid: uid(),
@@ -409,11 +415,11 @@
             return url.search(/^(data:)/) !== -1;
         }
 
-		function isSrcAsDataUrl(text) {
-			var DATA_URL_REGEX = /url\(['"]?(data:)([^'"]+?)['"]?\)/;
+        function isSrcAsDataUrl(text) {
+            var DATA_URL_REGEX = /url\(['"]?(data:)([^'"]+?)['"]?\)/;
 
-			return text.search(DATA_URL_REGEX) !== -1;
-		}
+            return text.search(DATA_URL_REGEX) !== -1;
+        }
         function toBlob(canvas) {
             return new Promise(function (resolve) {
                 var binaryString = window.atob(canvas.toDataURL().split(',')[1]);
@@ -672,7 +678,7 @@
 
         function readAll() {
             return Promise.resolve(util.asArray(document.styleSheets))
-				.then(loadExternalStyleSheets)
+                .then(loadExternalStyleSheets)
                 .then(getCssRules)
                 .then(selectWebFontRules)
                 .then(function (rules) {
@@ -689,90 +695,93 @@
                     });
             }
 
-			function loadExternalStyleSheets(styleSheets) {
-				return Promise.all(
-					styleSheets.map(function (sheet) {
-						if (sheet.href) {
-							return fetch(sheet.href)
-								.then(toText)
-								.then(setBaseHref(sheet.href))
-								.then(toStyleSheet);
-						} else {
-							return Promise.resolve(sheet);
-						}
-					})
-				);
+            function loadExternalStyleSheets(styleSheets) {
+                return Promise.all(
+                    styleSheets.map(function (sheet) {
+                        if (sheet.href) {
+                            return fetch(sheet.href)
+                                .then(toText)
+                                .then(setBaseHref(sheet.href))
+                                .then(toStyleSheet(sheet.href));
+                        } else {
+                            return Promise.resolve(sheet);
+                        }
+                    })
+                );
 
-				function toText(response) {
-					return response.text();
-				}
+                function toText(response) {
+                    return response.text();
+                }
 
-				function setBaseHref(base) {
-					base = base.split('/');
-					base.pop();
-					base = base.join('/');
+                function setBaseHref(base) {
+                    base = base.split('/');
+                    base.pop();
+                    base = base.join('/');
 
-					return function(text) {
-						return util.isSrcAsDataUrl(text) ? text : text.replace(
-							/url\(['"]?([^'"]+?)['"]?\)/g,
-							addBaseHrefToUrl
-						);
-					};
+                    return function(text) {
+                        return util.isSrcAsDataUrl(text) ? text : text.replace(
+                            /url\(['"]?([^'"]+?)['"]?\)/g,
+                            addBaseHrefToUrl
+                        );
+                    };
 
-					function addBaseHrefToUrl(match, p1) {
-						var url = /^http/i.test(p1) ?
-							p1 : concatAndResolveUrl(base, p1)
-						return 'url(\'' + url + '\')';
-					}
+                    function addBaseHrefToUrl(match, p1) {
+                        var url = /^http/i.test(p1) ?
+                            p1 : concatAndResolveUrl(base, p1)
+                        return 'url(\'' + url + '\')';
+                    }
 
-					// Source: http://stackoverflow.com/a/2676231/3786856
-					function concatAndResolveUrl(url, concat) {
-						var url1 = url.split('/');
-						var url2 = concat.split('/');
-						var url3 = [ ];
-						for (var i = 0, l = url1.length; i < l; i ++) {
-							if (url1[i] == '..') {
-								url3.pop();
-							} else if (url1[i] == '.') {
-								continue;
-							} else {
-								url3.push(url1[i]);
-							}
-						}
-						for (var i = 0, l = url2.length; i < l; i ++) {
-							if (url2[i] == '..') {
-								url3.pop();
-							} else if (url2[i] == '.') {
-								continue;
-							} else {
-								url3.push(url2[i]);
-							}
-						}
-						return url3.join('/');
-					}
-				}
+                    // Source: http://stackoverflow.com/a/2676231/3786856
+                    function concatAndResolveUrl(url, concat) {
+                        var url1 = url.split('/');
+                        var url2 = concat.split('/');
+                        var url3 = [ ];
+                        for (var i = 0, l = url1.length; i < l; i ++) {
+                            if (url1[i] == '..') {
+                                url3.pop();
+                            } else if (url1[i] == '.') {
+                                continue;
+                            } else {
+                                url3.push(url1[i]);
+                            }
+                        }
+                        for (var i = 0, l = url2.length; i < l; i ++) {
+                            if (url2[i] == '..') {
+                                url3.pop();
+                            } else if (url2[i] == '.') {
+                                continue;
+                            } else {
+                                url3.push(url2[i]);
+                            }
+                        }
+                        return url3.join('/');
+                    }
+                }
 
-				function toStyleSheet(text) {
-					var doc = document.implementation.createHTMLDocument('');
-					var styleElement = document.createElement('style');
+                function toStyleSheet(base) {
+                    return function(text) {
+                        var doc = document.implementation.createHTMLDocument('');
+                        var styleElement = document.createElement('style');
 
-					styleElement.textContent = text;
-					doc.body.appendChild(styleElement);
+                        styleElement.textContent = text;
+                        styleElement.setAttribute('data-dom-to-image-base', base);
+                        doc.body.appendChild(styleElement);
 
-					return styleElement.sheet;
-				}
-			}
+                        return styleElement.sheet;
+                    }
+                }
+            }
 
             function getCssRules(styleSheets) {
                 var cssRules = [];
                 styleSheets.forEach(function (sheet) {
-					if (sheet.cssRules && typeof sheet.cssRules === 'object') {
-						try {
-							util.asArray(sheet.cssRules || []).forEach(cssRules.push.bind(cssRules));
-						} catch (e) {
-							console.log('Error while reading CSS rules from ' + sheet.href, e.toString());
-						}
-					}
+                    if (sheet.cssRules && typeof sheet.cssRules === 'object') {
+                        try {
+                            util.asArray(sheet.cssRules || []).forEach(cssRules.push.bind(cssRules));
+                        } catch (e) {
+                            console.log('Error while reading CSS rules from ' + sheet.href, e.toString());
+                        }
+                    }
                 });
                 return cssRules;
             }
@@ -781,6 +790,12 @@
                 return {
                     resolve: function resolve() {
                         var baseUrl = (webFontRule.parentStyleSheet || {}).href;
+
+                        // webFontRule is clone, there is no href
+                        if (!baseUrl && webFontRule.parentStyleSheet && webFontRule.parentStyleSheet.ownerNode) {
+                            baseUrl = webFontRule.parentStyleSheet.ownerNode.getAttribute('data-dom-to-image-base') || null;
+                        }
+
                         return inliner.inlineAll(webFontRule.cssText, baseUrl);
                     },
                     src: function () {
